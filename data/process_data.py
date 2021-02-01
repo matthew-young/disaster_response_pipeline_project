@@ -11,7 +11,13 @@ def load_data(messages_filepath, categories_filepath):
 
     # merge datasets
     df = messages.merge(categories, on=['id'])
+        
+    return df
 
+
+
+def clean_data(df):
+    
     # create a dataframe of the 36 individual category columns
     categories = categories['categories'].str.split(pat=';',expand=True)
     categories.head()
@@ -38,12 +44,6 @@ def load_data(messages_filepath, categories_filepath):
 
     # concatenate the original dataframe with the new `categories` dataframe
     df = pd.concat([df,categories],axis=1)
-        
-    return df
-
-
-
-def clean_data(df):
    
     # drop duplicates
     df = df.drop_duplicates()
