@@ -12,7 +12,6 @@ from sqlalchemy import create_engine
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 
-from sklearn.externals import joblib
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import classification_report 
 from sklearn.model_selection import GridSearchCV
@@ -26,7 +25,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
 def load_data(database_filepath):
     # load data from database
-    engine = create_engine(database_filepath)
+    engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql("SELECT * FROM messages", engine)
     X = df.message.values
     Y = df.iloc[:,4:].values
@@ -53,7 +52,13 @@ def build_model():
         ('clf', MultiOutputClassifier(KNeighborsClassifier()))
     ])
 
+    return pipeline
+
+
+def evaluate_model(model, X_test, Y_test, category_names):
     
+    model.fit(X_test, Y_test)
+    y_pred = model.predict(X_test)
     parameters = {
     'vect__ngram_range': ((1, 1), (1, 2)),
     'vect__max_df': (0.5, 0.75, 1.0),
@@ -62,19 +67,17 @@ def build_model():
     'clf__estimator__leaf_size':(30, 35, 40)
     }
 
-    cv = GridSearchCV(pipeline, param_grid=parameters)
-
-    return cv
-
-
-def evaluate_model(model, X_test, Y_test, category_names):
+    cv = GridSearchCV(model, param_grid=parameters)
+    
     for i in range(len(category_names)):
-        print(categories[i])
-        print(classification_report(X_test[i], y_pred[i]))
+        print(category_names[i])
+        print(classification_report(Y_test[i], y_pred[i]))
 
 
 def save_model(model, model_filepath):
-    joblib.dump(model.grid_scores_, model_filepath)
+    save_classifier = open(model_filepath, 'wb')
+    pickle.dump(model, save_classifier)
+    save_classifier.close()
 
 
 
