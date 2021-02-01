@@ -19,7 +19,7 @@ def load_data(messages_filepath, categories_filepath):
 def clean_data(df):
     
     # create a dataframe of the 36 individual category columns
-    categories = categories['categories'].str.split(pat=';',expand=True)
+    categories = df['categories'].str.split(pat=';',expand=True)
     categories.head()
     categories.shape
 
