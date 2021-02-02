@@ -28,8 +28,8 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
-    """clean the data by dropping duplicates and splitting the categories 
-    into their own columns
+    """clean the data by dropping duplicates, wrong values and splitting
+    the categories into their own columns
 
     Args:
     df: dataframe. This is the merged dataframe created in def 'load_data'
@@ -67,6 +67,9 @@ def clean_data(df):
     # drop duplicates
     df = df.drop_duplicates()
 
+    # drop incorrect values in 'related' field
+    df = df.drop(df[df.related == 2].index)
+
     return df
 
 
@@ -81,7 +84,7 @@ def save_data(df, database_filename):
     none
     """
     engine = create_engine('sqlite:///' + database_filename)
-    df.to_sql('messages', engine, index=False)
+    df.to_sql('messages', engine, index=False, if_exists='replace')
   
 
 

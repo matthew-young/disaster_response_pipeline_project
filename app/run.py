@@ -42,6 +42,10 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+
+    #categories names and counts for pie chart
+    category_names = df.iloc[:,4:].columns
+    category_counts = df.iloc[:,4:].sum(axis=0)
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -61,6 +65,25 @@ def index():
                 },
                 'xaxis': {
                     'title': "Genre"
+                }
+            }
+        },
+        #bar chart
+        {
+            'data': [
+                Bar(
+                    x=category_names,
+                    y=category_counts
+                )
+            ],
+
+            'layout': {
+                'title': 'Count of Categories in Data',
+                'yaxis': {
+                    'title': "Count"
+                },
+                'xaxis': {
+                    'title': "Category"
                 }
             }
         }
