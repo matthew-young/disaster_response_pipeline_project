@@ -24,6 +24,19 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
 
 def load_data(database_filepath):
+    """load the data from a specified database and get the independent
+    and dependent variables and the category names for modeling
+    
+    Args:
+    database_filepath: str. the filepath to access the database and 
+    download the data
+    
+    |Returns:
+    X: the independent variable, the messages themselves
+    Y: the dependent variable, all the different categories
+    category_names: no surprise, the name of the dependent variable 
+    categories 
+    """
     # load data from database
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql("SELECT * FROM messages", engine)
@@ -34,7 +47,15 @@ def load_data(database_filepath):
     return X, Y, category_names
 
 def tokenize(text):
+    """tokenize the messages for easier analysis
     
+    Args: 
+    text: str. the messages we're looking to break up into their words
+    
+    Returns:
+    clean_tokens: the tokenized, lemmatized, lowercased and de-spaced 
+    (stripped) words
+    """
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -46,6 +67,15 @@ def tokenize(text):
     return clean_tokens
 
 def build_model():
+    """ building the pipeline for data modeling
+    
+    Args:
+    none
+    
+    Returns:
+    pipeline: our pipeline of CountVectorizer, TfidfTransformer and
+    MultiOutplutClassifier
+    """
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
@@ -56,9 +86,23 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    """evaluating the model by fitting the data to the model, predicting 
+    the results and conducting a gridsearch to optimize
     
+    Args:
+    model: our pipeline from def 'build_model'
+    X_test: array. our test values for X
+    Y_test: array. our test values for Y
+    category_names: the names of the Y categories
+
+    Returns:
+    none
+    """
+    #fit the data to the model
     model.fit(X_test, Y_test)
+    #get predicted values
     y_pred = model.predict(X_test)
+    #set parameters for gridsearch
     parameters = {
     'vect__ngram_range': ((1, 1), (1, 2)),
     'vect__max_df': (0.5, 0.75, 1.0),
@@ -66,15 +110,20 @@ def evaluate_model(model, X_test, Y_test, category_names):
     'clf__estimator__n_neighbors': (4,5,6),
     'clf__estimator__leaf_size':(30, 35, 40)
     }
-
+    #execute gridsearch
     cv = GridSearchCV(model, param_grid=parameters)
     
+    #print results
     for i in range(len(category_names)):
         print(category_names[i])
         print(classification_report(Y_test[i], y_pred[i]))
 
 
 def save_model(model, model_filepath):
+    """save the model to a pickle file
+    
+    Args:
+    model: our"""
     save_classifier = open(model_filepath, 'wb')
     pickle.dump(model, save_classifier)
     save_classifier.close()
@@ -82,6 +131,7 @@ def save_model(model, model_filepath):
 
 
 def main():
+    """main method, given from Udacity"""
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))

@@ -4,6 +4,17 @@ import sqlite3
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
+    """Load data from the given csvs
+    
+    Args:
+    messages_filepath: str. filepath to access the csv of all the 
+    messages to analyse
+    categories_filepath: str. ilepath to access the csv of all the 
+    categories these messages could be a part of
+    
+    Returns:
+    df: a dataframe of the merged tables drawn from the csvs
+    """
     # load messages dataset
     messages = pd.read_csv(messages_filepath)
     # load categories dataset
@@ -17,7 +28,15 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
-    
+    """clean the data by dropping duplicates and splitting the categories 
+    into their own columns
+
+    Args:
+    df: dataframe. This is the merged dataframe created in def 'load_data'
+
+    Returns:
+    df: a dataframe with individual columns for each category and no duplicates
+    """
     # create a dataframe of the 36 individual category columns
     categories = df['categories'].str.split(pat=';',expand=True)
     categories.head()
@@ -52,13 +71,22 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
+    """save the dataframe to the appropriate database
 
+    Args:
+    df: dataframe. Our tidy new dataframe from def 'clean_data'
+    database_filename: str. the name of the database we want to create
+
+    Returns:
+    none
+    """
     engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('messages', engine, index=False)
   
 
 
 def main():
+    """main method, given from Udacity"""
     if len(sys.argv) == 4:
 
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
